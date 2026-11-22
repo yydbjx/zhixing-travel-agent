@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>智行 · 高保真可交互原型 v2.0</title>
+<style>
+:root{
+  --ink:#0F1B2D; --ink2:#132338; --ink3:#182C46;
+  --line:#26394F; --text:#E8EDF5; --muted:#8FA0B8;
+  --orange:#D06A3C; --orange2:#E08A5A;
+  --cream:#FAF6EF; --paper:#FFFFFF; --dark:#2B2B2B;
+  --green:#3FA45B; --amber:#B8860B;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  background:#07101c; color:var(--text); -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ---------- 原型工具条 ---------- */
+.toolbar{
+  position:fixed; top:0; left:0; right:0; height:44px; z-index:100;
+  display:flex; align-items:center; gap:14px; padding:0 18px;
+  background:rgba(10,18,30,.92); border-bottom:1px solid #1d2c40;
+  backdrop-filter:blur(8px); font-size:12.5px; color:var(--muted);
+}
+.toolbar .brand{color:#fff;font-weight:600;letter-spacing:.5px}
+.toolbar .badge{
+  padding:3px 9px;border-radius:99px;background:rgba(208,106,60,.16);
+  color:var(--orange2);border:1px solid rgba(208,106,60,.35);font-size:11.5px;
+}
+.toolbar .nav{margin-left:auto;display:flex;gap:6px}
+.toolbar .nav button{
+  padding:5px 11px;border-radius:7px;font-size:12px;color:var(--muted);
+  border:1px solid transparent;
+}
+.toolbar .nav button:hover{color:#fff;border-color:#2c435e;background:#132338}
+.toolbar .nav button.on{color:#fff;background:var(--orange);border-color:var(--orange)}
+
+.stage{position:absolute;top:44px;left:0;right:0;bottom:0;overflow:auto}
+.screen{display:none;min-height:100%}
+.screen.on{display:block}
+
+/* ---------- 登录 ---------- */
+#login{
+  display:none; place-items:center;
+  background:radial-gradient(1200px 600px at 50% -10%, #1b3350 0%, #0b1524 60%, #070f19 100%);
+}
+#login.on{display:grid}
+.login-card{
+  width:392px;padding:38px 34px 30px;border-radius:16px;
+  background:rgba(19,35,56,.85);border:1px solid #23384f;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+}
+.logo{display:flex;align-items:center;gap:11px;margin-bottom:26px}
+.logo .mark{
+  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  font-weight:700;color:#fff;font-size:17px;
+}
+.logo .name{font-size:19px;font-weight:700;letter-spacing:1px}
+.logo .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.field input{
+  width:100%;height:42px;padding:0 13px;border-radius:9px;
+  background:#0d1a2b;border:1px solid #29405a;color:var(--text);font-size:14px;outline:none;
+}
+.field input:focus{border-color:var(--orange)}
+.btn-primary{
+  width:100%;height:44px;margin-top:8px;border-radius:9px;font-size:14.5px;font-weight:600;
+  background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;
+}
+.btn-primary:hover{filter:brightness(1.07)}
+.hint{margin-top:16px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.7}
+.hint code{color:var(--orange2);background:rgba(208,106,60,.12);padding:1px 5px;border-radius:4px}
+
+/* ---------- 工作台 ---------- */
+#chat.on{display:grid;grid-template-columns:264px 1fr}
+.side{
+  background:#0b1728;border-right:1px solid #1b2a3d;display:flex;flex-direction:column;
+  padding:16px 12px;height:100%;
+}
+.side .logo{margin:0 0 16px 6px}
+.side .logo .mark{width:30px;height:30px;font-size:14px;border-radius:9px}
+.side .logo .name{font-size:15px}
+.side .logo .sub{font-size:10.5px}
+.new-chat{
+  height:38px;border-radius:9px;border:1px dashed #2f4762;color:#b9c8db;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:16px;
+}
+.new-chat:hover{border-color:var(--orange);color:var(--orange2)}
+.side-title{font-size:11px;color:#5f7290;letter-spacing:1px;margin:0 6px 8px}
+.sessions{flex:1;overflow:auto}
+.session{
+  padding:9px 10px;border-radius:8px;font-size:12.8px;color:#a9b8cc;margin-bottom:2px;
+  display:flex;justify-content:space-between;gap:8px;cursor:pointer;
+}
+.session:hover{background:#12233a;color:#fff}
+.session.on{background:#16304b;color:#fff;box-shadow:inset 2px 0 0 var(--orange)}
+.session .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.session .d{font-size:10.5px;color:#5f7290;flex:none}
+.side-foot{border-top:1px solid #1b2a3d;padding-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.side-foot button{
+  flex:1;min-width:0;padding:7px 0;border-radius:7px;font-size:11.5px;color:#8fa0b8;
+  border:1px solid #22364c;
+}
+.side-foot button:hover{color:#fff;border-color:var(--orange)}
+.engine{
+  margin:10px 2px 0;font-size:10.5px;color:#5f7290;display:flex;align-items:center;gap:6px;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+
+.main{display:flex;flex-direction:column;height:100%;background:#0d1a2b}
+.main-head{
+  height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:0 24px;
+  border-bottom:1px solid #1b2a3d;
+}
+.main-head h2{font-size:14px;font-weight:600}
+.main-head .sub{font-size:11.5px;color:var(--muted)}
+.pills{margin-left:auto;display:flex;gap:8px}
+.pill{
+  font-size:11px;padding:4px 10px;border-radius:99px;color:#93a6bd;
+  border:1px solid #24374f;background:#0f1f33;
+}
+.pill.ok{color:#7fd39a;border-color:rgba(63,164,91,.4);background:rgba(63,164,91,.1)}
+
+.thread{flex:1;overflow:auto;padding:26px 0 8px}
+.wrap{width:min(780px,90%);margin:0 auto}
+
+.msg{margin-bottom:26px}
+.msg.user .bubble{
+  background:#16304b;border-radius:12px 12px 3px 12px;padding:12px 15px;font-size:14px;
+  width:fit-content;margin-left:auto;max-width:78%;line-height:1.75;
+}
+.msg.bot .bubble{
+  border-left:3px solid var(--orange);padding:2px 0 2px 16px;font-size:14px;line-height:1.9;
+}
+.msg.bot .bubble h4{font-size:13px;color:var(--orange2);margin:14px 0 6px;letter-spacing:.4px}
+.msg.bot .bubble .k{color:#fff;font-weight:600}
+
+.stage-line{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.spinner{width:11px;height:11px;border:2px solid rgba(208,106,60,.25);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.steps{border:1px solid #22364c;border-radius:9px;background:#0f1f33;margin-bottom:12px;overflow:hidden}
+.steps-head{
+  padding:10px 13px;font-size:12.5px;color:#a9b8cc;display:flex;align-items:center;gap:8px;cursor:pointer;
+}
+.steps-head:hover{background:#12233a}
+.steps-head .arrow{transition:transform .2s;font-size:10px;color:#5f7290}
+.steps.open .steps-head .arrow{transform:rotate(90deg)}
+.steps-body{display:none;border-top:1px solid #22364c;padding:6px 0}
+.steps.open .steps-body{display:block}
+.step{padding:9px 13px;font-size:12px;color:#a9b8cc;display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:baseline}
+.step .n{color:#4f6482;font-variant-numeric:tabular-nums}
+.step .tool{color:#dbe6f2}
+.step .tool code{color:var(--orange2);font-size:11.5px}
+.step .ms{color:#5f7290;font-size:11px;font-variant-numeric:tabular-nums}
+.step .meta{grid-column:2/4;color:#6b7f99;font-size:11px;margin-top:2px}
+
+.filecard{
+  display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:11px;
+  background:linear-gradient(135deg,#17304b,#132338);border:1px solid #2a4562;
+  cursor:pointer;max-width:430px;transition:.18s;
+}
+.filecard:hover{border-color:var(--orange);transform:translateY(-1px)}
+.filecard .ic{
+  width:38px;height:38px;border-radius:9px;display:grid;place-items:center;flex:none;
+  background:rgba(208,106,60,.16);border:1px solid rgba(208,106,60,.35);color:var(--orange2);font-size:16px;
+}
+.filecard .nm{font-size:13px;color:#fff;font-weight:600}
+.filecard .ds{font-size:11px;color:var(--muted);margin-top:3px}
+.filecard .go{color:#5f7290;font-size:11px;margin-left:auto;flex:none}
+
+.composer{flex:none;padding:0 0 18px}
+.composer .box{
+  width:min(780px,90%);margin:0 auto;background:#12233a;border:1px solid #24374f;
+  border-radius:13px;padding:11px 12px 9px;
+}
+.chips{display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap}
+.chip{
+  font-size:11.5px;padding:5px 11px;border-radius:99px;color:#93a6bd;
+  border:1px solid #24374f;background:#0f1f33;
+}
+.chip:hover{color:#fff;border-color:var(--orange)}
+.input-row{display:flex;align-items:flex-end;gap:10px}
+.input-row textarea{
+  flex:1;resize:none;height:42px;max-height:120px;padding:10px 4px;font-size:14px;
+  background:transparent;border:none;outline:none;color:var(--text);font-family:inherit;
+}
+.send{
+  height:36px;padding:0 20px;border-radius:9px;font-size:13.5px;font-weight:600;
+  background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;flex:none;
+}
+.send:disabled{opacity:.45;cursor:not-allowed}
+.foot-note{
+  width:min(780px,90%);margin:9px auto 0;font-size:10.8px;color:#4f6482;text-align:center;line-height:1.6;
+}
+
+/* ---------- 攻略页 ---------- */
+#guide.on{display:block;background:var(--cream);color:var(--dark)}
+.g-hero{
+  background:linear-gradient(135deg,#D06A3C,#E08A5A);color:#fff;padding:46px 0 40px;
+}
+.g-wrap{width:min(960px,90%);margin:0 auto}
+.g-hero .back{
+  font-size:12px;color:rgba(255,255,255,.8);margin-bottom:18px;display:inline-flex;gap:6px;
+  border:1px solid rgba(255,255,255,.35);padding:5px 12px;border-radius:99px;
+}
+.g-hero .back:hover{background:rgba(255,255,255,.15);color:#fff}
+.g-hero h1{font-size:31px;letter-spacing:.5px;margin-bottom:10px}
+.g-hero .meta{font-size:13px;color:rgba(255,255,255,.9)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:26px}
+.stat{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:13px 15px}
+.stat .l{font-size:11.5px;color:rgba(255,255,255,.85)}
+.stat .v{font-size:19px;font-weight:700;margin-top:5px}
+.g-body{padding:34px 0 60px}
+.sec{margin-bottom:34px}
+.sec h3{
+  font-size:16px;margin-bottom:14px;padding-left:11px;border-left:4px solid var(--orange);line-height:1.2;
+}
+.card{background:var(--paper);border:1px solid #E6DFD2;border-radius:10px;padding:18px 20px}
+.map{
+  background:#EDE7DA;border:1px solid #DFD6C5;border-radius:10px;height:260px;position:relative;overflow:hidden;
+}
+.map .grid{position:absolute;inset:0;background-image:linear-gradient(#E2DAC9 1px,transparent 1px),linear-gradient(90deg,#E2DAC9 1px,transparent 1px);background-size:40px 40px;opacity:.7}
+.pin{position:absolute;transform:translate(-50%,-100%);text-align:center;font-size:10.5px;color:#5a4a33}
+.pin i{
+  display:block;width:13px;height:13px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  background:var(--orange);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);margin:0 auto 4px;
+}
+.day{border:1px solid #E6DFD2;border-radius:10px;overflow:hidden;margin-bottom:13px;background:var(--paper)}
+.day-h{display:flex;align-items:center;gap:12px;padding:13px 18px;background:#F6F1E7;border-bottom:1px solid #E6DFD2}
+.day-h .tag{font-size:11px;font-weight:700;color:#fff;background:var(--orange);padding:3px 9px;border-radius:5px;letter-spacing:.5px}
+.day-h .t{font-size:14px;font-weight:600}
+.day-h .w{margin-left:auto;font-size:11.5px;color:#8a7a63}
+.slots{padding:6px 18px 14px}
+.slot{display:grid;grid-template-columns:64px 1fr auto;gap:12px;padding:10px 0;border-bottom:1px dashed #EDE6D9;font-size:13px}
+.slot:last-child{border-bottom:none}
+.slot .tm{color:#9c8b73;font-size:12px}
+.slot .pl{color:var(--dark)}
+.slot .pl b{font-weight:600}
+.slot .pl small{display:block;color:#8a7a63;font-size:11.5px;margin-top:3px}
+.slot .fee{color:var(--orange);font-size:12.5px;font-variant-numeric:tabular-nums}
+.budget{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.bud{background:var(--paper);border:1px solid #E6DFD2;border-radius:9px;padding:14px 16px}
+.bud .l{font-size:11.5px;color:#8a7a63}
+.bud .v{font-size:17px;font-weight:700;margin-top:5px;color:var(--dark)}
+.bud .bar{height:4px;border-radius:2px;background:#EDE6D9;margin-top:9px;overflow:hidden}
+.bud .bar i{display:block;height:100%;background:var(--orange)}
+.note{font-size:11.5px;color:#8a7a63;margin-top:10px;line-height:1.7}
+.wx{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.wx .d{background:var(--paper);border:1px solid #E6DFD2;border-radius:9px;padding:12px;text-align:center}
+.wx .d .n{font-size:11.5px;color:#8a7a63}
+.wx .d .t{font-size:15px;font-weight:600;margin:6px 0 3px}
+.wx .d .s{font-size:11px;color:#9c8b73}
+.tips li{font-size:13px;color:#4a4a4a;line-height:2;margin-left:18px}
+
+/* ---------- 设置 ---------- */
+#settings.on{display:block;background:#0d1a2b}
+.set-wrap{width:min(720px,90%);margin:0 auto;padding:34px 0 60px}
+.set-wrap h1{font-size:20px;margin-bottom:6px}
+.set-wrap .d{font-size:12.5px;color:var(--muted);margin-bottom:24px}
+.set-row{margin-bottom:18px}
+.set-row label{display:block;font-size:12.5px;color:#a9b8cc;margin-bottom:7px}
+.set-row input{width:100%;height:42px;padding:0 13px;border-radius:9px;background:#0f1f33;border:1px solid #29405a;color:var(--text);font-size:13.5px;outline:none}
+.set-row input:focus{border-color:var(--orange)}
+.set-row .tip{font-size:11px;color:#5f7290;margin-top:6px}
+.set-actions{display:flex;gap:10px;margin-top:26px}
+.btn-ghost{padding:10px 18px;border-radius:9px;border:1px solid #29405a;color:#a9b8cc;font-size:13px}
+.btn-ghost:hover{color:#fff;border-color:var(--orange)}
+
+/* ---------- 浮层提示 ---------- */
+.coach{display:none;
+  position:fixed;right:20px;bottom:20px;z-index:200;width:270px;
+  background:#132338;border:1px solid #2a4562;border-radius:12px;padding:15px 16px;
+  box-shadow:0 18px 40px rgba(0,0,0,.45);font-size:12.3px;color:#b9c8db;line-height:1.85;
+}
+.coach b{color:#fff;display:block;margin-bottom:7px;font-size:12.8px}
+.coach ol{margin-left:16px}
+.coach .x{position:absolute;top:9px;right:11px;color:#5f7290;font-size:14px}
+.coach .x:hover{color:#fff}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:#1b3350;border:1px solid #2f4a68;color:#dbe6f2;font-size:12.5px;
+  padding:9px 16px;border-radius:99px;opacity:0;transition:.25s;z-index:300;pointer-events:none;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="brand">智行</span>
+  <span class="badge">高保真可交互原型 v2.0</span>
+  <span style="color:#4f6482">演示路径：登录 → 发送 → 展开思考过程 → 点文件卡片 → 攻略页</span>
+  <div class="nav">
+    <button data-go="login">登录</button>
+    <button data-go="chat" class="on">对话工作台</button>
+    <button data-go="guide">攻略页</button>
+    <button data-go="settings">设置</button>
+  </div>
+</div>
+
+<div class="stage">
+
+  <!-- ============ 登录 ============ -->
+  <section class="screen" id="login">
+    <div class="login-card">
+      <div class="logo">
+        <div class="mark">智</div>
+        <div>
+          <div class="name">智行</div>
+          <div class="sub">说一句话，查真实数据、算钱、排顺序</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>用户名</label>
+        <input id="u" value="demo" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input id="p" type="password" value="demo1234">
+      </div>
+      <button class="btn-primary" onclick="go('chat');toast('已登录（演示账号 demo）')">登录</button>
+      <div class="hint">演示账号 <code>demo</code> / <code>demo1234</code><br>数据来自高德、open-meteo、OSRM 真实接口</div>
+    </div>
+  </section>
+
+  <!-- ============ 工作台 ============ -->
+  <section class="screen on" id="chat">
+    <aside class="side">
+      <div class="logo">
+        <div class="mark">智</div>
+        <div>
+          <div class="name">智行</div>
+          <div class="sub">出行规划智能体</div>
+        </div>
+      </div>
+      <button class="new-chat" onclick="toast('新建了一个空会话')">＋ 新对话</button>
+      <div class="side-title">历史对话</div>
+      <div class="sessions">
+        <div class="session on"><span class="t">泉州 2 天 预算 1200</span><span class="d">今天</span></div>
+        <div class="session" onclick="toast('已切换到该会话')"><span class="t">长沙周末两天怎么玩</span><span class="d">昨天</span></div>
+        <div class="session" onclick="toast('已切换到该会话')"><span class="t">广州到泉州怎么走</span><span class="d">11-20</span></div>
+        <div class="session" onclick="toast('已切换到该会话')"><span class="t">清源山要爬多久</span><span class="d">11-19</span></div>
+      </div>
+      <div class="side-foot">
+        <button onclick="toast('长期记忆：预算档位=中，口味=不吃辣')">记忆</button>
+        <button onclick="go('settings')">设置</button>
+        <button onclick="toast('已导出为 Markdown')">导出</button>
+      </div>
+      <div class="engine"><span class="dot"></span>引擎就绪 · 9 个 MCP 工具</div>
+    </aside>
+
+    <div class="main">
+      <div class="main-head">
+        <div>
+          <h2>泉州 2 天 预算 1200</h2>
+          <div class="sub">说一句话，我去查天气、算路线、排行程</div>
+        </div>
+        <div class="pills">
+          <span class="pill">9 个 MCP 工具</span>
+          <span class="pill ok">在线 v2.0</span>
+        </div>
+      </div>
+
+      <div class="thread" id="thread">
+        <div class="wrap" id="stream"></div>
+      </div>
+
+      <div class="composer">
+        <div class="box">
+          <div class="chips">
+            <button class="chip" onclick="fill('泉州 2 天，预算 1200，想看古建筑')">泉州 2 天 · 古建筑</button>
+            <button class="chip" onclick="fill('长沙周末两天怎么玩')">长沙周末 2 天</button>
+            <button class="chip" onclick="fill('帮我排个行程')">缺目的地（看反问）</button>
+          </div>
+          <div class="input-row">
+            <textarea id="inp" rows="1" placeholder="说人话就行，例如：泉州 2 天，预算 1200，想看古建筑"></textarea>
+            <button class="send" id="send" onclick="run()">发送</button>
+          </div>
+        </div>
+        <div class="foot-note">天气来自 open-meteo，路线来自 OSRM，POI 来自高德 —— 都是真实数据，不是模型编的</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 攻略页 ============ -->
+  <section class="screen" id="guide">
+    <div class="g-hero">
+      <div class="g-wrap">
+        <button class="back" onclick="go('chat')">← 回到对话</button>
+        <h1>泉州 2 天 · 古建筑与海丝遗迹</h1>
+        <div class="meta">广州出发 · 2 人 · 预算 1200 元 · 生成于 2026-11-22 19:40</div>
+        <div class="stats">
+          <div class="stat"><div class="l">总里程</div><div class="v">1 046 km</div></div>
+          <div class="stat"><div class="l">预算合计</div><div class="v">¥ 1 020</div></div>
+          <div class="stat"><div class="l">点位</div><div class="v">7 个</div></div>
+          <div class="stat"><div class="l">步行强度</div><div class="v">中等</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g-body">
+      <div class="g-wrap">
+
+        <div class="sec">
+          <h3>出发前须知</h3>
+          <div class="card" style="font-size:13px;line-height:1.95;color:#4a4a4a">
+            泉州 11 月下旬日均 22～27℃，早晚温差 6℃ 左右，带一件薄外套即可。西街与开元寺一带步行即可串联，建议穿软底鞋。
+            清源山台阶较多，安排在第 2 天上午，避开午后逆光。所有门票、里程均来自实时接口，取不到的部分已在对应位置标明「未取到」。
+          </div>
+        </div>
+
+        <div class="sec">
+          <h3>点位地图</h3>
+          <div class="map">
+            <div class="grid"></div>
+            <div class="pin" style="left:32%;top:38%"><i></i>开元寺</div>
+            <div class="pin" style="left:44%;top:30%"><i></i>西街</div>
+            <div class="pin" style="left:54%;top:44%"><i></i>清净寺</div>
+            <div class="pin" style="left:64%;top:56%"><i></i>关岳庙</div>
+            <div class="pin" style="left:24%;top:62%"><i></i>清源山</div>
+            <div class="pin" style="left:78%;top:34%"><i></i>洛阳桥</div>
+            <div class="pin" style="left:86%;top:66%"><i></i>蟳埔村</div>
+            <div style="position:absolute;left:14px;bottom:12px;font-size:10.5px;color:#8a7a63;background:rgba(255,255,255,.8);padding:4px 8px;border-radius:5px">
+              底图：高德瓦片（GCJ-02，与 POI 坐标同源，无需转换）
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <h3>逐日安排</h3>
+          <div class="day">
+            <div class="day-h"><span class="tag">D1</span><span class="t">古城核心：开元寺 → 西街 → 清净寺 → 关岳庙</span><span class="w">多云 22～27℃</span></div>
+            <div class="slots">
+              <div class="slot"><span class="tm">08:30</span><span class="pl"><b>开元寺</b><small>东西塔、大雄宝殿；建议 2 小时，早到人少</small></span><span class="fee">¥ 0</span></div>
+              <div class="slot"><span class="tm">11:00</span><span class="pl"><b>西街</b><small>面线糊、润饼；步行 400 m</small></span><span class="fee">¥ 60</span></div>
+              <div class="slot"><span class="tm">14:00</span><span class="pl"><b>清净寺</b><small>中国现存最早伊斯兰教寺之一；步行 900 m</small></span><span class="fee">¥ 3</span></div>
+              <div class="slot"><span class="tm">16:00</span><span class="pl"><b>关岳庙</b><small>香火极旺，傍晚光线好；步行 700 m</small></span><span class="fee">¥ 0</span></div>
+            </div>
+          </div>
+          <div class="day">
+            <div class="day-h"><span class="tag">D2</span><span class="t">城郊：清源山 → 洛阳桥 → 蟳埔村</span><span class="w">晴 23～28℃</span></div>
+            <div class="slots">
+              <div class="slot"><span class="tm">08:00</span><span class="pl"><b>清源山</b><small>老君岩造像；门票取自高德 biz_ext.cost</small></span><span class="fee">¥ 55</span></div>
+              <div class="slot"><span class="tm">13:30</span><span class="pl"><b>洛阳桥</b><small>宋代跨海石桥；市区打车约 30 分钟</small></span><span class="fee">¥ 0</span></div>
+              <div class="slot"><span class="tm">16:00</span><span class="pl"><b>蟳埔村</b><small>簪花围体验；日落前光线最好</small></span><span class="fee">¥ 40</span></div>
+            </div>
+          </div>
+          <div class="note">门票合计 ¥ 98 为高德返回的人均消费口径，非官方票价；未返回的景点按 0 计入并标注「未取到」。</div>
+        </div>
+
+        <div class="sec">
+          <h3>天气</h3>
+          <div class="wx">
+            <div class="d"><div class="n">11-23 周六</div><div class="t">22～27℃</div><div class="s">多云 · 降水 10%</div></div>
+            <div class="d"><div class="n">11-24 周日</div><div class="t">23～28℃</div><div class="s">晴 · 降水 5%</div></div>
+            <div class="d"><div class="n">11-25 周一</div><div class="t">21～26℃</div><div class="s">阴 · 降水 20%</div></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <h3>预算拆解</h3>
+          <div class="budget">
+            <div class="bud"><div class="l">门票</div><div class="v">¥ 120</div><div class="bar"><i style="width:24%"></i></div></div>
+            <div class="bud"><div class="l">住宿（1 晚）</div><div class="v">¥ 380</div><div class="bar"><i style="width:76%"></i></div></div>
+            <div class="bud"><div class="l">餐饮</div><div class="v">¥ 400</div><div class="bar"><i style="width:80%"></i></div></div>
+            <div class="bud"><div class="l">市内交通</div><div class="v">¥ 120</div><div class="bar"><i style="width:24%"></i></div></div>
+          </div>
+          <div class="note">合计 ¥ 1 020，余 ¥ 180。住宿按「舒适型」档位估算，非实时房价，已在接口与界面标注口径。</div>
+        </div>
+
+        <div class="sec">
+          <h3>城际交通</h3>
+          <div class="card" style="font-size:13px;line-height:1.95;color:#4a4a4a">
+            广州 → 泉州：高铁约 4 小时 10 分，二等座 ¥ 254；距 1 046 km 为 OSRM 公路里程，用于估算自驾方案。
+            市内通勤本版不支持规划，两景点之间多远建议直接用地图 App。
+          </div>
+        </div>
+
+        <div class="sec">
+          <h3>贴士</h3>
+          <ul class="tips">
+            <li>开元寺周一闭馆（法定节假日除外），排期时已避开。</li>
+            <li>蟳埔村簪花围建议提前预约，周末 15:00 后要排队。</li>
+            <li>西街人流量大，贵重物品贴身放。</li>
+            <li>本攻略可直接转发给同伴，也可下载 Word 版离线查看。</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 设置 ============ -->
+  <section class="screen" id="settings">
+    <div class="set-wrap">
+      <h1>设置</h1>
+      <div class="d">Key 只保存在本机环境变量中，接口返回时脱敏，仅保留后 4 位。</div>
+      <div class="set-row">
+        <label>高德 Web 服务 Key</label>
+        <input value="••••••••••••••••••••••e3a7" readonly>
+        <div class="tip">未配置时只有 9 个城市的示例数据，其余城市会标注「示例数据」</div>
+      </div>
+      <div class="set-row">
+        <label>模型服务</label>
+        <input value="bailian / deepseek-v4.1-flash" readonly>
+        <div class="tip">模型不可用时自动切换规则引擎，并在回复末尾声明「降级模式」</div>
+      </div>
+      <div class="set-row">
+        <label>引擎状态</label>
+        <input value="Pi 已就绪（--mode rpc）" readonly>
+      </div>
+      <div class="set-actions">
+        <button class="btn-primary" style="width:auto;padding:0 24px" onclick="toast('已保存，正在重启引擎…')">保存并重启引擎</button>
+        <button class="btn-ghost" onclick="go('chat')">返回对话</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+function go(name){
+  if(location.hash !== '#'+name) history.replaceState(null,'','#'+name);
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === name));
+  document.querySelectorAll('.toolbar .nav button').forEach(b => b.classList.toggle('on', b.dataset.go === name));
+  if(name === 'chat') $('.thread').scrollTop = 0;
+}
+
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1900);
+}
+
+function fill(text){ $('#inp').value = text; }
+
+const STEPS = [
+  {t:'weather.get_forecast', a:'{city:"泉州", date:"2026-11-23"}', ms:412, d:'返回 3 天预报'},
+  {t:'amap.poi_search', a:'{keywords:"古建筑", city:"泉州"}', ms:688, d:'返回 7 个点位与坐标'},
+  {t:'route.plan_route', a:'{from:"广州", to:"泉州"}', ms:533, d:'公路 1 046 km / 高铁 4h10m'},
+  {t:'amap.hotel_search', a:'{city:"泉州", level:"舒适型"}', ms:604, d:'返回 6 家候选'},
+  {t:'itinerary.build_plan', a:'{days:2, poi:[...], weather:[...]}', ms:906, d:'逐日排程完成'},
+  {t:'budget.split_four', a:'{total:1200}', ms:288, d:'门票 120 / 住 380 / 吃 400 / 行 120'}
+];
+
+function stepsHTML(n){
+  return `<div class="steps${n > 0 ? '' : ''}" id="stp">
+    <div class="steps-head" onclick="this.parentNode.classList.toggle('open')">
+      <span class="arrow">▶</span>
+      <span id="stp-title">思考过程：<b id="stp-n">0</b> 步（正在调用工具…）</span>
+      <span style="margin-left:auto;font-size:11px;color:#5f7290">点开可看参数与耗时</span>
+    </div>
+    <div class="steps-body" id="stp-body"></div>
+  </div>`;
+}
+
+function addStep(i){
+  const body = $('#stp-body'); if(!body) return;
+  const s = STEPS[i];
+  const div = document.createElement('div');
+  div.className = 'step';
+  div.innerHTML = `<span class="n">${i+1}</span>
+    <span class="tool">调用了 <code>${s.t}</code></span>
+    <span class="ms">${s.ms} ms</span>
+    <span class="meta">${s.a}　→　${s.d}</span>`;
+  body.appendChild(div);
+  $('#stp-n').textContent = i+1;
+}
+
+const ANSWER = `
+<div class="stage-line"><span class="dot" style="background:#3FA45B"></span>已完成 · 全程 9.4 秒 · 6 次工具调用</div>
+<h4>结论</h4>
+泉州 2 天可以这样排：第 1 天走古城（开元寺—西街—清净寺—关岳庙），第 2 天出城（清源山—洛阳桥—蟳埔村）。
+4 个核心点位步行就能串起来，清源山放第 2 天上午，避开午后逆光。
+<h4>钱怎么花（预算 1200）</h4>
+<span class="k">门票 120 · 住宿 380 · 餐饮 400 · 市内交通 120</span>，合计 1020，余 180。
+门票取的是高德 <code style="color:#E08A5A">biz_ext.cost</code>（人均消费口径），不是官方票价 —— 这一点后面会标出来。
+<h4>两个提醒</h4>
+· 开元寺周一闭馆，排期时已经避开；<br>
+· 11 月下旬泉州 22～27℃，带件薄外套，清源山台阶多，穿软底鞋。
+`;
+
+let busy = false;
+async function run(){
+  if(busy) return;
+  const text = $('#inp').value.trim();
+  if(!text){ toast('先输入一句需求'); return; }
+  busy = true; $('#send').disabled = true;
+
+  const stream = $('#stream');
+  const u = document.createElement('div');
+  u.className = 'msg user';
+  u.innerHTML = `<div class="bubble">${text.replace(/</g,'&lt;')}</div>`;
+  stream.appendChild(u);
+  $('#inp').value = '';
+  scrollBottom();
+
+  // 缺目的地 → 反问分支
+  if(!/泉州|长沙|广州|厦门|成都|杭州|北京|上海|西安|桂林/.test(text)){
+    await wait(500);
+    const b = document.createElement('div');
+    b.className = 'msg bot';
+    b.innerHTML = `<div class="bubble">想去的城市是哪里？<br>
+      <span style="color:#8FA0B8;font-size:13px">我需要城市才能查 POI、天气和里程 —— 不会替你猜一个。</span></div>`;
+    stream.appendChild(b); scrollBottom();
+    busy = false; $('#send').disabled = false; return;
+  }
+
+  await wait(420);
+  const bot = document.createElement('div');
+  bot.className = 'msg bot';
+  bot.innerHTML = `<div class="stage-line"><span class="spinner"></span><span id="stage">正在理解需求…</span></div>
+    ${stepsHTML(0)}
+    <div class="bubble" id="ans"></div>
+    <div id="filewrap"></div>`;
+  stream.appendChild(bot);
+  scrollBottom();
+
+  const stages = ['正在理解需求…','正在调用工具（1/6）…','正在调用工具（3/6）…','正在调用工具（6/6）…','正在整理答案…'];
+  for(let i = 0; i < STEPS.length; i++){
+    await wait(i === 0 ? 700 : 520);
+    addStep(i);
+    $('#stage').textContent = i < 3 ? `正在调用工具（${i+1}/6）…` : (i < 5 ? `正在调用工具（${i+1}/6）…` : '正在整理答案…');
+    scrollBottom();
+  }
+
+  await wait(520);
+  $('#stp-title').innerHTML = '思考过程：<b>6</b> 步（调用了 weather、poi_search、plan_route、hotel_search、build_plan、split_four）';
+  const sl = bot.querySelector('.stage-line');
+  if(sl) sl.remove();
+  $('#ans').innerHTML = ANSWER;
+  scrollBottom();
+
+  await wait(560);
+  $('#filewrap').innerHTML = `
+    <div class="filecard" onclick="go('guide')">
+      <div class="ic">▤</div>
+      <div>
+        <div class="nm">泉州2日攻略.html</div>
+        <div class="ds">8 个区块 · 含点位地图 · 可直接转发</div>
+      </div>
+      <div class="go">打开 ›</div>
+    </div>`;
+  scrollBottom();
+  toast('攻略文件已生成，点卡片打开');
+  busy = false; $('#send').disabled = false;
+}
+
+function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+function scrollBottom(){ const t = $('.thread'); t.scrollTop = t.scrollHeight; }
+
+document.querySelectorAll('.toolbar .nav button').forEach(b =>
+  b.addEventListener('click', () => go(b.dataset.go)));
+
+$('#inp').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); run(); }
+});
+
+// 首次进入自动演示一次
+const hash = (location.hash || '').replace('#','');
+if(hash && document.getElementById(hash)){ go(hash); }
+else { setTimeout(() => { if(!busy){ fill('泉州 2 天，预算 1200，想看古建筑'); run(); } }, 800); }
+</script>
+</body>
+</html>
